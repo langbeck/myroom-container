@@ -9,6 +9,6 @@ RUN apt-get install -y libc6:i386 libstdc++6:i386 libuuid1:i386 libxtst6:i386 li
 RUN apt-get install -y xkb-data
 
 COPY hpmyroom.deb /hpmyroom.deb
-RUN dpkg -i /hpmyroom.deb
+RUN dpkg -i /hpmyroom.deb && rm /hpmyroom.deb
 
 ENTRYPOINT ["/usr/bin/hpmyroom"]
