@@ -1,0 +1,27 @@
+#!/bin/bash
+
+CONTAINER_NAME=hpmyroom
+
+# Try to restart a existing container...
+docker restart -t 0 "${CONTAINER_NAME}" > /dev/null || {
+	# Prepare to launch a new container
+	CMDLINE=(docker run -d)
+
+	# Container name
+	CMDLINE+=(--name="${CONTAINER_NAME}")
+
+	# Graphic support
+	CMDLINE+=(-v $HOME/.Xauthority:/root/.Xauthority)
+	CMDLINE+=(--net=host)
+	CMDLINE+=(-e DISPLAY)
+
+	# Audio support
+	CMDLINE+=(-e PULSE_SERVER=tcp:172.17.0.1:56920)
+
+	# Image name
+	CMDLINE+=(hpmyroom)
+
+
+	# Launch the container 
+	exec "${CMDLINE[@]}"	
+}

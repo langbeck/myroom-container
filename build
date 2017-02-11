@@ -1,0 +1,11 @@
+#!/bin/bash
+set -e
+
+VERSION=v10.4.0.0174
+
+BUILD_ARGS=()
+[ -n "${https_proxy}" ] && BUILD_ARGS+=(--build-arg=https_proxy=${https_proxy})
+[ -n "${http_proxy}" ] && BUILD_ARGS+=(--build-arg=http_proxy=${http_proxy})
+
+wget -c -q --show-progress -O hpmyroom.deb "https://www.myroom.hpe.com/downloadfiles/hpmyroom_${VERSION}_i386.deb"
+docker build ${BUILD_ARGS[@]} -t hpmyroom .
