@@ -1,0 +1,59 @@
+#!/bin/bash
+set -e
+
+SCRIPT_HOME=$(realpath $(dirname $0))
+CONTAINER_NAME=hpmyroom-instance
+
+
+# Prepare to create a new container
+CMDLINE=(docker create)
+
+# Container name
+CMDLINE+=(--name=${CONTAINER_NAME})
+
+# Graphic support
+CMDLINE+=(-v $HOME/.Xauthority:/root/.Xauthority)
+CMDLINE+=(-e DISPLAY=:0)
+CMDLINE+=(--net=host)
+
+# Audio support
+CMDLINE+=(-e PULSE_SERVER=tcp:172.17.0.1:56920)
+
+# Image name
+CMDLINE+=(hpmyroom)
+
+
+# Create the container 
+echo "Creating the container..."
+docker rm -f ${CONTAINER_NAME} 2> /dev/null 1> /dev/null || true
+${CMDLINE[@]} 2> /dev/null 1> /dev/null
+
+echo "Extracting icon..."
+TMPICO=$(mktemp --suffix=.ico)
+docker cp ${CONTAINER_NAME}:/usr/share/hpmyroom/Resources/MyRoom.ico ${TMPICO}
+
+echo "Converting icons..."
+for s in 16 32 48; do
+	icotool -x -w ${s} -h ${s} -o $HOME/.local/share/icons/hicolor/${s}x${s}/apps/MyRoom.png ${TMPICO}
+done
+
+echo "Creating launcher script..."
+cat <<EOF > ${HOME}/.local/bin/hpmyroom
+docker restart -t 0 "${CONTAINER_NAME}"
+EOF
+
+echo "Creating desktop entry..."
+cat <<EOF > $HOME/.local/share/applications/HP-MyRoom.desktop
+#!/usr/bin/env xdg-open
+[Desktop Entry]
+Name=HP MyRoom (in container)
+Comment=Start the HP MyRoom container
+Categories=Network;InstantMessaging;
+Exec=${HOME}/.local/bin/hpmyroom
+Type=Application
+Terminal=false
+Icon=MyRoom
+EOF
+
+echo "Updating desktop database..."
+update-desktop-database ${HOME}/.local/share/applications/
