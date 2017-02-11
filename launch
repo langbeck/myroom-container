@@ -3,7 +3,7 @@
 CONTAINER_NAME=hpmyroom
 
 # Try to restart a existing container...
-docker restart -t 0 "${CONTAINER_NAME}" > /dev/null || {
+docker restart -t 0 "${CONTAINER_NAME}" 2> /dev/null || {
 	# Prepare to launch a new container
 	CMDLINE=(docker run -d)
 
